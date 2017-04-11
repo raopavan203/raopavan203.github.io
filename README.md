@@ -1,8 +1,6 @@
 ## Summary
 
-You can use the [editor on GitHub](https://github.com/raopavan203/raopavan203.github.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+We are going to create optimized implementations of the deduplication module in CloudFS (a hybrid cloud-backed local file system, developed in 18-746: Storage Systems), that makes use of Rabin fingerprinting for chunking, on both GPU and multi-core CPU platforms, and perform a detailed analysis of both systems' performance characteristics.
 
 ### Markdown
 
