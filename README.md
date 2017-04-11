@@ -1,4 +1,4 @@
-## Summary
+### Summary
 
 We are going to create optimized implementations of the deduplication module in CloudFS (a hybrid cloud-backed local file system, developed in 18-746: Storage Systems), that makes use of Rabin fingerprinting for chunking, on both GPU and multi-core CPU platforms, and perform a detailed analysis of both systems' performance characteristics.
 
@@ -29,32 +29,38 @@ Since the GPU shared memory is much smaller than the amount of data to be proces
 ### Resources
 
 - ***Hardware***
+
 8-core (hyperthreaded) 3.20 GHz Intel Xeon i7 processors on GHC machines
 NVIDIA GeForce GTX 1080 GPUs on GHC machines
 
 - ***Starter code base***
+
 CloudFS project that we developed in our 18746 (Storage Systems) class, a single threaded hybrid FUSE-based file system.
 
 - ***Reference paper used***
-Samer Al-Kiswany, Abdullah Gharaibeh, Matei Ripeanu, GPUs as Storage System Accelerators, IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS, VOL. 24, NO. 8, AUGUST 2013.
 
-Udi Manber, Finding Similar Files in a Large File System, USENIX Winter 1994 Technical Conference Proceedings, Jan. 17-21, 1994, San Francisco, CA.
+1. Samer Al-Kiswany, Abdullah Gharaibeh, Matei Ripeanu, GPUs as Storage System Accelerators, IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS, VOL. 24, NO. 8, AUGUST 2013.
+
+2. Udi Manber, Finding Similar Files in a Large File System, USENIX Winter 1994 Technical Conference Proceedings, Jan. 17-21, 1994, San Francisco, CA.
 
 
 ### Goals and deliverables
 
 - ***PLAN TO ACHIEVE:***
+
 Design compute-intensive workloads for CloudFS (for example: large size writes) and benchmark single-threaded implementation of the file system.
 Develop a correct parallel implementation of the deduplication module using multi-core CPU with openMP and GPU using CUDA.
 Measure speedup of the deduplication module using multi-core CPU as against the single-core CPU implementation as baseline. Also measuring speedup of the GPU implementation as against the multi-core CPU implementation.
 Measure the improvement in file system throughput if any due to speedup in deduplication module.
 
 - ***HOPE TO ACHIEVE:***
+
 Scale the parallel dedup to a multi-GPU implementation and analyze the speedup.
 Explore different chunking algorithms in place of Rabin fingerprinting and analyze speedup for them in the same multi-core and multi-GPU environments.
 Study the behavior under various workloads - small writes, snapshots, data with no duplication, data with a lot of duplication etc.
 
 - ***DEMO/RESULTS:***
+
 Speedup graphs for deduplication module performance in case of both multi-core version as well as GPU version.
 Graphs for file system throughput changes under different workloads for the two versions.
 Results of analysis regarding the type of workloads benefited by multi-core parallelism and those benefited by GPU parallelism.
@@ -82,31 +88,3 @@ CloudFS is implemented in C++. We will be using the CUDA platform to work with t
 - May 8 - May 11 : 
 1. Work on the future goals
 2. Finish writeup. Make the project ready for handin.
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/raopavan203/raopavan203.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
