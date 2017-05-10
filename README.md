@@ -12,7 +12,9 @@ We are going to create optimized implementations of the deduplication module in 
 
 - ***Parallelization of Rabin fingerprinting***
 
-Rabin fingerprinting is a content-based rolling hash technique, which uses sliding window mechanism to detect chunk boundaries. Currently, this is a single-threaded library implementation. It will be challenging to come up with an efficient parallel scheme for both multi-core and GPU versions for this task without causing other overheads.
+Rabin fingerprinting is a content-based rolling hash technique, which uses sliding window mechanism to detect chunk boundaries. Currently, this is a single-threaded library implementation. It will be challenging to come up with an efficient parallel scheme for both multi-core and GPU versions for this task without causing other overheads. The existing serial version of the deduplication module will have to be completely redesigned to be made parallelizable. This will involve a major effort in restructuring a lot of code (including the rabin fingerprinting library and the deduplication module of cloudfs that invokes the library.
+
+Specifically, in the serial version, we iterate over buffer and detect Rabin fingerprint markers to detect segments, one after the other. The existing rabin library implementation has a method to perform rabin fingerprinting and detected atmost one marker at a time and return. This method is used by the dedup module of clouds, and it is currently designed to sequentially read a buffer of data from a file, invoke the rabin_segment_next API and suck inthe next rabin segment sequentially in a loop. A huge chunk of our time will be invested in re-writing the rabin library to be able to return multiple rabin fingerprint markers in a given buffer of data, which we will call the compute_rabin_segments_X API. This method will be designed to be data-parallel. Also, the dedup module will need to be restructured to be able to read a large buffer from the file, and invoke the compute_rabin_segments_X API on the buffer. And then detect and register all the segments from the markers returned by the API. This will be a major change in the current code flow and is estimated to take up quite some time. Then we can work on parallelization of the compute_rabin_segments_X API on both cpu and gpu, using openmp and cuda respectively.
 
 - ***Hiding CPU-GPU data transfer overheads***
 
@@ -49,15 +51,15 @@ CloudFS project that we developed in our 18746 (Storage Systems) class, a single
 - ***PLAN TO ACHIEVE:***
 
 Design compute-intensive workloads for CloudFS (for example: large size writes) and benchmark single-threaded implementation of the file system.
+Restructure the exisiting serial implementation of dedup module to be data-parallelized.
 Develop a correct parallel implementation of the deduplication module using multi-core CPU with openMP and GPU using CUDA.
 Measure speedup of the deduplication module using multi-core CPU as against the single-core CPU implementation as baseline. Also measuring speedup of the GPU implementation as against the multi-core CPU implementation.
 Measure the improvement in file system throughput if any due to speedup in deduplication module.
 
 - ***HOPE TO ACHIEVE:***
 
-Scale the parallel dedup to a multi-GPU implementation and analyze the speedup.
-Explore different chunking algorithms in place of Rabin fingerprinting and analyze speedup for them in the same multi-core and multi-GPU environments.
 Study the behavior under various workloads - small writes, snapshots, data with no duplication, data with a lot of duplication etc.
+Scale the parallel dedup to a multi-GPU implementation and analyze the speedup.
 
 - ***DEMO/RESULTS:***
 
@@ -81,25 +83,22 @@ CloudFS is implemented in C++. We will be using the CUDA platform to work with t
 
 - April 10 - April 16 : 
 1. Understand how Rabin fingerprinting algorithm works: DONE
-2. Benchmark the current cloudFS starter implementation: Waiting for installation GHC machines
+2. Benchmark the current cloudFS starter implementation: DONE
 
 - April 17 - April 25 : 
 1. Write a test framework to evaluate speedup of the parallel version: DONE
-2. Update checkpoint write-up
+2. Update checkpoint write-up: DONE
 
-- April 26 - April 28 : 
+- May 2- May 6 : 
+1. Revamp serial code to support parallelization.
+2. Benchmrk the new serial verision.
+
+- May 7 - May 9:
 1. Parallelise the Rabin fingerprinting operation across multiple cores of a CPU
-2. Observe the performance improvement
+2. Observe the performance improvement if any and optimize.
 
-- May 2 - May 5:
+- May 10 - May 11 : 
 1. Start parallelizing Rabin fingerprinting using one GPU
 2. Complete parallelization of the Rabin fingerprinting using one GPU
-
-- May 6 - May 8 : 
-1. Benchmark and explore additional optimizations while integrating with the cloudFS code.
-2. Parallelize across multiple GPUs
 3. Analysis and evaluation of results
-
-- May 9 - May 11 : 
-1. Work on the future goals
-2. Finish writeup. Make the project ready for handin.
+4. Finish writeup. Make the project ready for handin.
