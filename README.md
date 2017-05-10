@@ -71,6 +71,15 @@ Results of analysis regarding the type of workloads benefited by multi-core para
 
 CloudFS is implemented in C++. We will be using the CUDA platform to work with the multiple NVIDIA GeForce GTX 1080 GPUs on GHC machines. For the CPU implementation, we will use the 8-core (hyperthreaded) 3.20 GHz Intel Xeon i7 processors on GHC machines. We will use OpenMP for CPU version of multi-core parallelism. The i7 processor can be used as a  benchmark to analyze multi-core CPU performance and then further compare it with the multi-GPU performance. We have chosen these systems to leverage parallelism in the computationally bound components (namely deduplication) of the file system and achieve good utilization of resources. We will use writes of large sizes to simulate the compute-bound file system workloads issued such that the rate of requests being served (file system throughput) will be bound by the processing in deduplication module, while disk and network latencies will no longer be an overhead.
 
+### Status Update post checkpoint
+
+- ***Work completed so far:***
+1. We have revamped the serial version of rabin library and cloudfs dedup module to be able to support data-parallelism. This has taken up more time than we anticipated. The code changes have been non-trivial in terms of our expectations.
+2. We have implemented a basic cpu-parallel version of the rabin fingerprinting module using openmp.
+3. The preliminary results show a degradation in performance for large writes. This is possibly due to some overhead including mallocs, combining the results in a sequential manner etc. We are currently working on nailing down the bottlenecks precisely and then will optimize the cpu parallel version for those bottlenecks. We are yet to try out larger write workloads, where parallelism benefits may exceed 
+4. If we observe speedup after the optimizations, we will move to the GPU parallelization using CUDA on similar lines as the CPU parallel version.
+5. If we find time, we will try to optimize the GPU version to overcome bottlenecks.
+
 ### Checkpoint Status Update
 
 - ***Work completed so far:***
