@@ -76,7 +76,8 @@ CloudFS is implemented in C++. We will be using the CUDA platform to work with t
 - ***Work completed so far:***
 1. We have revamped the serial version of rabin library and cloudfs dedup module to be able to support data-parallelism. This has taken up more time than we anticipated. The code changes have been non-trivial in terms of our expectations.
 2. We have implemented a basic cpu-parallel version of the rabin fingerprinting module using openmp.
-3. The preliminary results show a degradation in performance for large writes. This is possibly due to some overhead including mallocs, combining the results in a sequential manner etc. We are currently working on nailing down the bottlenecks precisely and then will optimize the cpu parallel version for those bottlenecks. We are yet to try out larger write workloads, where parallelism benefits may exceed 
+3. ***The preliminary results show a 2x speedup for large writes (16KB) in the compute_rabin_segments function (single threaded vs. 16 threads on GHC machine).***
+4. However, there is degradation in total write time for large writes(16 KB). This is possibly due to some overhead in combining the results in a sequential manner and bad locality of reference in doing so. We are currently working on nailing down the bottlenecks precisely and then will optimize the cpu parallel version for those bottlenecks. We are yet to try out larger write workloads, where parallelism benefits may exceed this overhead.
 4. If we observe speedup after the optimizations, we will move to the GPU parallelization using CUDA on similar lines as the CPU parallel version.
 5. If we find time, we will try to optimize the GPU version to overcome bottlenecks.
 
