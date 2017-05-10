@@ -2,6 +2,18 @@
 
 We are going to create optimized implementations of the deduplication module in CloudFS (a hybrid cloud-backed local file system, developed in 18-746: Storage Systems), that makes use of Rabin fingerprinting for chunking, on both GPU and multi-core CPU platforms, and perform a detailed analysis of both systems' performance characteristics.
 
+
+### Status Update post checkpoint
+
+- ***Work completed so far:***
+1. We have revamped the serial version of rabin library and cloudfs dedup module to be able to support data-parallelism. This has taken up more time than we anticipated. The code changes have been non-trivial in terms of our expectations.
+2. We have implemented a basic cpu-parallel version of the rabin fingerprinting module using openmp.
+3. ***The preliminary results show a 2x speedup for large writes (16KB) in the compute_rabin_segments function (single threaded vs. 16 threads on GHC machine).***
+4. However, there is degradation in total write time for large writes(16 KB). This is possibly due to some overhead in combining the results in a sequential manner and bad locality of reference in doing so. We are currently working on nailing down the bottlenecks precisely and then will optimize the cpu parallel version for those bottlenecks. We are yet to try out larger write workloads, where parallelism benefits may exceed this overhead.
+4. If we observe speedup after the optimizations, we will move to the GPU parallelization using CUDA on similar lines as the CPU parallel version.
+5. If we find time, we will try to optimize the GPU version to overcome bottlenecks.
+
+
 ### Background
 
   In file systems, a common way to avoid redundant computations and storage is to perform deduplication on the data. Hence, it is important to detect duplicate content during any write/update operation in the filesystem. The most effective way to detect duplicate content is to use content-based chunking. The Rabin fingerprinting algorithm is a popular content-based chunking algorithm. This involves defining chunk boundaries in a file, based on the content and not a fixed offset. This leads to variable sized chunks. A scan of the entire new/changed content is made and fingerprints are calculated over a sliding window of data. This calculation involves polynomial division of a polynomial of degree w-1 for a w bit sequence, with an irreducible polynomial of degree k. This is a very computationally intensive operation. The high computational cost is evident especially in writes of large sizes, when these large writes need to be chunked each time. The computation time in this case is greater than the I/O or bandwidth latency of the filesystem and it is thus, compute-bound. 
@@ -70,16 +82,6 @@ Results of analysis regarding the type of workloads benefited by multi-core para
 ### Platform Choice
 
 CloudFS is implemented in C++. We will be using the CUDA platform to work with the multiple NVIDIA GeForce GTX 1080 GPUs on GHC machines. For the CPU implementation, we will use the 8-core (hyperthreaded) 3.20 GHz Intel Xeon i7 processors on GHC machines. We will use OpenMP for CPU version of multi-core parallelism. The i7 processor can be used as a  benchmark to analyze multi-core CPU performance and then further compare it with the multi-GPU performance. We have chosen these systems to leverage parallelism in the computationally bound components (namely deduplication) of the file system and achieve good utilization of resources. We will use writes of large sizes to simulate the compute-bound file system workloads issued such that the rate of requests being served (file system throughput) will be bound by the processing in deduplication module, while disk and network latencies will no longer be an overhead.
-
-### Status Update post checkpoint
-
-- ***Work completed so far:***
-1. We have revamped the serial version of rabin library and cloudfs dedup module to be able to support data-parallelism. This has taken up more time than we anticipated. The code changes have been non-trivial in terms of our expectations.
-2. We have implemented a basic cpu-parallel version of the rabin fingerprinting module using openmp.
-3. ***The preliminary results show a 2x speedup for large writes (16KB) in the compute_rabin_segments function (single threaded vs. 16 threads on GHC machine).***
-4. However, there is degradation in total write time for large writes(16 KB). This is possibly due to some overhead in combining the results in a sequential manner and bad locality of reference in doing so. We are currently working on nailing down the bottlenecks precisely and then will optimize the cpu parallel version for those bottlenecks. We are yet to try out larger write workloads, where parallelism benefits may exceed this overhead.
-4. If we observe speedup after the optimizations, we will move to the GPU parallelization using CUDA on similar lines as the CPU parallel version.
-5. If we find time, we will try to optimize the GPU version to overcome bottlenecks.
 
 ### Checkpoint Status Update
 
