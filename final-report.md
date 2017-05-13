@@ -9,7 +9,7 @@ In file systems, a common way to avoid redundant computations and storage is to 
 * It reads the stream of input data in a buffered manner  <br>
 * Computes the chunk boundaries using the Rabin fingerprint algorithm  <br>
 * Identifies chunks as the data between the chunk boundaries and computes an MD5 hash over each chunk.  <br>
-![alt text](images/dedupstages.jpg)
+![alt text](images/dedupstages.jpg) <br>
 **Figure A: Stages in deduplication module** <br><br>
 
 ## 2.2. Rabin fingerprinting
@@ -145,7 +145,7 @@ The graphs in Figure 3.3 and 3.4 show the execution times of the Rabin computati
 3\. The increasing speedup with increase in write sizes show that there is a tremendous potential to parallelize it using more resources and reduce the execution time. Since we have already explored the multi-core parallelism, we decided to go with GPU parallelism for large write sizes. <br>
 
 ## 4.4 Analysis: limitations in speedup and breakdown of execution time
-<br>
+
 * Some data dependencies: <br>
 As mentioned earlier, there is data dependency across thread boundaries of the last and first thread (across iterations of invocations to compute_rabin_segment_cpu). Specifically, the first thread needs to read data from the last thread’s local computation.
 
@@ -158,12 +158,12 @@ Given the data dependency requirements of the algorithm for correctness, the fir
 * Locality: <br>
 In one of our earlier implementations, the pattern of accesses of the rabinpoly_t state by multiple threads was randomly strayed in memory, which led to poor locality. We overcame this by re-structuring some portion of the code and improving locality of accesses. <br> <br>
 
-# CPU parallel version: 
+### CPU parallel version: 
 ![alt text](images/CPUexectime.png) <br>
 **Figure 3.5: Breakdown of execution times of various steps during CPU parallelization of Rabin fingerprinting algorithm** <br><br>
 After implementing the parallel rabin compute, we found that now, the serial MD5 hashing phase is the slowest component in the CloudFS dedup module. This makes sense since the MD5 hashing is performed on all segments returned by the compute_rabin_segments_cpu() function and the MD5 library calls scan the buffers passed to it. Thus, as we increase write sizes, the compute speedup goes on increasing and the MD5 hash starts becoming the bottleneck in the dedup module. It would be interesting to either think of parallelizing the hashing, or integrating the MD5 hashing of segments along with the compute_rabin_segments_cpu() function. That may help increase dedup module speedup and result in overall increase in file system write throughput. <br> <br>
 
-# CPU parallel version: 
+### CPU parallel version: 
 ![alt text](images/GPUexectime.png) <br>
 **Figure 3.6: Breakdown of execution times of various steps during GPU parallelization of Rabin fingerprinting algorithm** <br><br>
 A naive version of GPU parallelization algorithm, similar to the CPU parallel algorithm has been implemented using CUDA. For the GPU parallel implementation, memory needs to be allocated on the GPU and data transfer needs to be done between CPU and GPU. After allocating memory on the GPU, there are 4 phases in the GPU parallel implementation : <br>
