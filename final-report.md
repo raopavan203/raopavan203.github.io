@@ -9,7 +9,7 @@ In file systems, a common way to avoid redundant computations and storage is to 
 * It reads the stream of input data in a buffered manner  <br>
 * Computes the chunk boundaries using the Rabin fingerprint algorithm  <br>
 * Identifies chunks as the data between the chunk boundaries and computes an MD5 hash over each chunk.  <br>
-![alt text](images/dedupstages.jpg) <br>
+![alt text](images/dedupstages.png) <br>
 **Figure A: Stages in deduplication module** <br><br>
 
 ## 2.2. Rabin fingerprinting
@@ -163,7 +163,7 @@ In one of our earlier implementations, the pattern of accesses of the rabinpoly_
 **Figure 3.5: Breakdown of execution times of various steps during CPU parallelization of Rabin fingerprinting algorithm** <br><br>
 After implementing the parallel rabin compute, we found that now, the serial MD5 hashing phase is the slowest component in the CloudFS dedup module. This makes sense since the MD5 hashing is performed on all segments returned by the compute_rabin_segments_cpu() function and the MD5 library calls scan the buffers passed to it. Thus, as we increase write sizes, the compute speedup goes on increasing and the MD5 hash starts becoming the bottleneck in the dedup module. It would be interesting to either think of parallelizing the hashing, or integrating the MD5 hashing of segments along with the compute_rabin_segments_cpu() function. That may help increase dedup module speedup and result in overall increase in file system write throughput. <br> <br>
 
-### CPU parallel version: 
+### GPU parallel version: 
 ![alt text](images/GPUexectime.png) <br>
 **Figure 3.6: Breakdown of execution times of various steps during GPU parallelization of Rabin fingerprinting algorithm** <br><br>
 A naive version of GPU parallelization algorithm, similar to the CPU parallel algorithm has been implemented using CUDA. For the GPU parallel implementation, memory needs to be allocated on the GPU and data transfer needs to be done between CPU and GPU. After allocating memory on the GPU, there are 4 phases in the GPU parallel implementation : <br>
@@ -173,8 +173,12 @@ A naive version of GPU parallelization algorithm, similar to the CPU parallel al
 * MD5 hash computation of the chunks on CPU <br><br>
 Figure 3.6 shows the breakdown of the execution times of these phases. It is observed that the copy in phase takes the majority of the time and this is prevents the GPU parallel version to achieve a good speedup despite a high number of computing resources.<br>
 
-## 4.5 Choice of machine: CPU/GPU
- <br>
+Moreover, the GPU implementation speedup is not linear since it is memory bandwidth bound for large thread counts since all these threads simultaneously issue multiple loads and stores to different addresses. The memory accesses should be more streamlined to reduce this bottleneck. <br>
+
+Some possible GPU specific optimizations: <br>
+* Hiding CPU-GPU data transfer overheads by overlapping copying and execution times using different GPU Streams (cudaMemcpyAsync can be used). We need to use pinned memory on host (via cudaMallocHost) since cudaMemcpyAsync only works with pinned host memory (so that OS does not swap out the memory while it is being asynchronously copied to device memory).
+* Hiding GPU memory allocation overheads by reusing device global memory across rabin library calls has already been implemented and is useful to cut down unrequired allocation times per call.
+* Efficient use of GPU shared memory for lookup buffers, rabinpoly window buffer, fingerprint and other state can help save some expensive device memory accesses and localize the shared state among threads with lower latency shared memory reads.
 
 ## 5. References
 
