@@ -102,7 +102,7 @@ We also changed few access patterns and structures to leverage better locality. 
 
 ## 3.6 Starter codebase
 CloudFS project that we developed in our 18746 (Storage Systems) class, a single threaded hybrid FUSE-based file system. 
-(Project URL available on demand).
+(Project repository can be shared on demand, required to be private by course guidelines).
 
 ## 4. Results
 
