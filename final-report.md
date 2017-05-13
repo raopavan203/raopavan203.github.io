@@ -138,12 +138,12 @@ The graphs in Figure 3.3 and 3.4 show the execution times of the Rabin computati
 ## 4.4 Analysis: limitations in speedup and breakdown of execution time
 <br>
 ![alt text](images/GPUexectime.png) <br>
-**Figure 3.5:Breakdown of execution times of various steps during GPU parallelization of Rabin fingerprinting algorithm** <br>
+**Figure 3.5: Breakdown of execution times of various steps during GPU parallelization of Rabin fingerprinting algorithm** <br><br>
 A naive version of GPU parallelization algorithm, similar to the CPU parallel algorithm has been implemented using CUDA. For the GPU parallel implementation, memory needs to be allocated on the GPU and data transfer needs to be done between CPU and GPU. After allocating memory on the GPU, there are 4 phases in the GPU parallel implementation : <br>
 * Copy In phase to copy user buffer from CPU to GPU <br>
 * Kernel launch which actually performs the computation on GPU cores <br>
 * Copy Out phase to copy results from GPU to CPU <br>
-* MD5 hash computation of the chunks on CPU <br>
+* MD5 hash computation of the chunks on CPU <br><br>
 Figure 3.5 shows the breakdown of the execution times of these phases. It is observed that the copy in phase takes the majority of the time and this is prevents the GPU parallel version to achieve a good speedup despite a high number of computing resources.<br>
 
 ## 4.5 Choice of machine: CPU/GPU
