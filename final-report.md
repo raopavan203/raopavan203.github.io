@@ -13,6 +13,7 @@ In file systems, a common way to avoid redundant computations and storage is to 
 ## 2.2. Rabin fingerprinting
 It detects boundaries of these chunks in the input data based on the content. A chunk is the data between 2 such boundaries. This may lead to variable sized chunks. <br>
 ![alt text](images/rabin.jpg) <br>
+**Figure A: Basic working of Rabin Fingerprinting algorithm** <br>
 As seen in Figure A, the algorithm computes fingerprints over a sliding window of data. The fingerprint calculation involves polynomial division of a polynomial of degree w-1 for a w bit sequence, with an irreducible polynomial of degree k. This is a very computationally intensive operation. <br>
 
 #### Data structures:
@@ -50,6 +51,7 @@ List of marker positions indicating chunk boundaries in input data, and number o
 ## 2.3. Motivation for parallel dedup (Computationally expensive part)
 
 ![alt text](images/deduptime.png) <br>
+**Figure B : Breakdown of the execution times in different sections of the deduplication module. About 88% of dedupe time is spent in computation.** <br>
 As seen in Figure B, on observing the execution times of various sections in the deduplication module, it was observed that majority of the time was spent in the Rabin Fingerprint function, whereas read and MD5 computation time was much lesser. Thus, The computation time in this case is greater than the I/O or bandwidth latency of the filesystem and it is thus, compute-bound. Hence, content based chunking algorithm will definitely benefit from parallelism as it will directly improve the file system throughput. Our goal was to improve reduce the execution time of the computation by parallelising it.
 
 ## 2.4. Dependencies in the program that would affect parallelism
