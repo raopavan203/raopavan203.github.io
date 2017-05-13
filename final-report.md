@@ -127,15 +127,19 @@ The writes requests consisted of uniform as well as random data which were invok
 ## 4.3. Graphs of speedup or execute time
 ![alt text](images/graph1.png) <br>
 **Figure 3.1: Compute time vs Number of threads** <br><br>
+**(Rabin compute time for 16 KB writes on GHC using OpenMP)** <br><br>
 Figure 3.1 shows the execution times of only the compute portion of the Rabin fingerprint algorithm by varying the number of threads. We observe a linear drop in the execution time for the CPU Parallel version, when changing the number of threads from 1 to 16.  <br>
 ![alt text](images/graph2.png) <br>
 **Figure 3.2: Compute time vs Write Size** <br><br>
+**(Rabin compute time for 16 KB writes on GHC using OpenMP)** <br><br>
 Since 16 threads gave the best performance, we fixed the number of threads = 16 for further observations. Figure 3.2 shows the execution times of only the compute portion of the Rabin fingerprint algorithm by varying the size of individual writes from 4KB to 64 KB. It is observed that as the write size increases, the serial version starts performing poorly whereas the parallel version is very fast. Thus, the speedup goes on increasing as the write size increases. <br>
 ![alt text](images/graph3.png) <br>
 **Figure 3.3: Rabin compute time and Deduplication module compute time: serial vs parallel (Write size = 256 KB)** <br>
 TBD<br>
+**Rabin compute time with 16 threads on GHC (1KB per thread using OpenMP)** <br><br>
 ![alt text](images/graph4.png) <br>
 **Figure 3.4: Rabin compute time and Deduplication module compute time: serial vs parallel (Write size = 512 KB)** <br><br>
+**Rabin compute time with 16 threads on GHC (1KB per thread using OpenMP)** <br><br>
 The graphs in Figure 3.3 and 3.4 show the execution times of the Rabin computation alone as well the entire deduplication module. Measurements are taken for write sizes 256 KB and 512 KB for the serial and cpu parallel versions. It is observed that for writes of size 256 KB, the cpu parallel version gives a speedup of 7x for the Rabin computation and a total speedup of 3.5x for the entire deduplication module, over the serial version. Similarly, for write sizes 512 KB, the cpu parallel version gives a speedup of 8x for the Rabin computation and a total speedup of 3.6x for the entire deduplication module over the serial version. <br> 
 **Analysis** <br> 
 1\. Rabin computation module is able to achieve decent speedup because of the cpu-parallel algorithm, but is not able achieve linear speedup due to the **synchronization** required between last thread and first thread (due to data dependency of Rabin fingerprinting) which is a bottleneck. (we confirmed this using fine-grained timing traces in the code). <br>
@@ -161,11 +165,13 @@ In one of our earlier implementations, the pattern of accesses of the rabinpoly_
 ### CPU parallel version: 
 ![alt text](images/CPUexectime.png) <br>
 **Figure 3.5: Breakdown of execution times of various steps during CPU parallelization of Rabin fingerprinting algorithm** <br><br>
+**Dedup and rabin compute time with 16 threads on GHC (1KB per thread using OpenMP)** <br><br>
 After implementing the parallel rabin compute, we found that now, the serial MD5 hashing phase is the slowest component in the CloudFS dedup module. This makes sense since the MD5 hashing is performed on all segments returned by the compute_rabin_segments_cpu() function and the MD5 library calls scan the buffers passed to it. Thus, as we increase write sizes, the compute speedup goes on increasing and the MD5 hash starts becoming the bottleneck in the dedup module. It would be interesting to either think of parallelizing the hashing, or integrating the MD5 hashing of segments along with the compute_rabin_segments_cpu() function. That may help increase dedup module speedup and result in overall increase in file system write throughput. <br> <br>
 
 ### GPU parallel version: 
 ![alt text](images/GPUexectime.png) <br>
 **Figure 3.6: Breakdown of execution times of various steps during GPU parallelization of Rabin fingerprinting algorithm** <br><br>
+**Cloudfs dedup time with 2048*20 CUDA threads on GHC (1KB per thread)** <br><br>
 A naive version of GPU parallelization algorithm, similar to the CPU parallel algorithm has been implemented using CUDA. For the GPU parallel implementation, memory needs to be allocated on the GPU and data transfer needs to be done between CPU and GPU. After allocating memory on the GPU, there are 4 phases in the GPU parallel implementation : <br>
 * Copy In phase to copy user buffer from CPU to GPU <br>
 * Kernel launch which actually performs the computation on GPU cores <br>
