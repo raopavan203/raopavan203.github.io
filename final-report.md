@@ -127,10 +127,10 @@ Since 16 threads gave the best performance, we fixed the number of threads = 16 
 TBD<br>
 ![alt text](images/graph4.png) <br>
 **Figure 3.4: Rabin compute time and Deduplication module compute time: serial vs parallel (Write size = 512 KB)** <br>
-TBD<br>
+The graphs in Figure 3.3 and 3.4 show the execution times of the Rabin computation alone as well the entire deduplication module. Measurements are taken for write sizes 256KB and 512 KB for the serial and cpu parallel versions. It is observed that for write sizes 256 KB, the cpu parallel version gives a speedup of 7x for the Rabin computation and a total speedup of 3.5x for the entire deduplication module, over the serial version. Similarly, for write sizes 512 KB, the cpu parallel version gives a speedup of 8x for the Rabin computation and a total speedup of 3.6x for the entire deduplication module over the serial version. The entire deduplication module is not able to achieve a perfect speedup because the MD5 computation is the serial portion which is not parallelized. <br>
 
 ## 4.4 Analysis: limitations in speedup and breakdown of execution time
-The graphs in Figure 3.3 and 3.4 show the execution times of the Rabin computation alone as well the entire deduplication module. Measurements are taken for write sizes 256KB and 512 KB for the serial and cpu parallel versions. It is observed that for write sizes 256 KB, the cpu parallel version gives a speedup of 7x for the Rabin computation and a total speedup of 3.5x for the entire deduplication module, over the serial version. Similarly, for write sizes 512 KB, the cpu parallel version gives a speedup of 8x for the Rabin computation and a total speedup of 3.6x for the entire deduplication module over the serial version. The entire deduplication module is not able to achieve a perfect speedup because the MD5 computation is the serial portion which is not parallelized. <br>
+<br>
 ![alt text](images/GPUexectime.png) <br>
 **Figure 3.5:** <br>
 
