@@ -89,7 +89,14 @@ GHC41.GHC.ANDREW.CMU.EDU and GHC45.GHC.ANDREW.CMU.EDU <br>
 Original serial algorithm (rabin_segment_next() API of the rabin fingerprint library) invoked by the dedup module of CloudFS processes the input buffer and returns as soon as it detects a marker. It is an iterative function that maintains the computation state within the rabinpoly_t structure passed to it across invocations. In order to implement a parallel version of rabin fingerprinting to detect segment boundaries, we need to implement a one-time call that processes a huge batch of data and determines the marker positions in the data stream, by employing multiple threads to work on different sections of the data stream. Hence, we implemented a better parallelizable version of the serial algorithm (compute_rabin_segments_serial() and its later counterparts- compute_rabin_segments_cpu() for CPU-parallel version and compute_rabin_segments_gpu() for GPU-parallel version). These versions simply process the entire buffer and returns all marker positions detected in the entire sequence. This enables employing multi-core as well as data-parallelism in the function versions.
 
 ## 3.5 Iterations of optimization
-TBD
+* Initially we started out with the goal of parallelising the deduplication library wherein each thread performed all the 3 steps of reading, rabin fingerprint computation and MD5 hash computation.
+* However, we observed that there was negligible speedup as the program had become bandwidth bound due to a high number of read requests coming from each thread concurrently. In order to have fewer number of reader threads, we used separate threads for reading and performing computation.
+* However, we still did not get a good speedup as the access pattern of various threads reading at different offsets in the file was bad. There was little locality and hence, the local filesystem performance during reads was also affected. This was confirmed by the timing traces of the sequence of read() calls.
+* On making observations about the performance bottlenecks, we realised that the compute phase took maximum amount of time and would benefit the most from parallelism.
+* Hence we proceeded to parallelise the compute phase and keep the reads and MD5 computations serial.
+* For the CPU parallel version, we performed many optimizations to minimise synchronisation overheads by removing barriers.
+We also changed few access patterns and structures to leverage better locality. These optimizations finally led us to the current CPU parallel version. 
+* For GPU version, we simply implemented a basic naive version and did not have the time to perform GPU specific optimizations.
 
 ## 3.6 Starter codebase
 CloudFS project that we developed in our 18746 (Storage Systems) class, a single threaded hybrid FUSE-based file system. 
