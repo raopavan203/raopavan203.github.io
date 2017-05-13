@@ -12,7 +12,7 @@ In file systems, a common way to avoid redundant computations and storage is to 
 
 ## 2.2. Rabin fingerprinting
 It detects boundaries of these chunks in the input data based on the content. A chunk is the data between 2 such boundaries. This may lead to variable sized chunks. <br>
-![alt text](images/rabin.jpg)
+![alt text](images/rabin.jpg) <br>
 ** Figure A: Basic working of Rabin Fingerprinting algorithm** <br><br>
 As seen in Figure A, the algorithm computes fingerprints over a sliding window of data. The fingerprint calculation involves polynomial division of a polynomial of degree w-1 for a w bit sequence, with an irreducible polynomial of degree k. This is a very computationally intensive operation. <br>
 
