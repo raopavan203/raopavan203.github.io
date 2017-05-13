@@ -144,18 +144,18 @@ The graphs in Figure 3.3 and 3.4 show the execution times of the Rabin computati
 
 3\. The increasing speedup with increase in write sizes show that there is a tremendous potential to parallelize it using more resources and reduce the execution time. Since we have already explored the multi-core parallelism, we decided to go with GPU parallelism for large write sizes. <br>
 
-## 4.4 Analysis: limitations in speedup and breakdown of execution time
+## 4.4. Analysis: limitations in speedup and breakdown of execution time
 
-* Some data dependencies: <br>
+* **Some data dependencies:** <br>
 As mentioned earlier, there is data dependency across thread boundaries of the last and first thread (across iterations of invocations to compute_rabin_segment_cpu). Specifically, the first thread needs to read data from the last thread’s local computation.
 
-* Communication/synchronization overhead: <br>
+* **Communication/synchronization overhead:** <br>
 The above mentioned dependency can be satisfied by having the last thread store its local computation (rabinpoly_t’s buf, bufpos, fingerprint and cur_seg_size fields) in a global space, from which the first thread can read in next iteration. However, this is a race condition in which the last thread can potentially overwrite the global state before the first thread reads in the previous iteration state for it to start correctly. This can cause incorrect results and thus requires the barrier synchronization so that next iterations’ writes by last thread do not occur before the previous iterations’ reads by first thread. We further optimized this barrier synchronization by using some temporary space to copy into, outside the pragma omp parallel block.
 
-* Some divergence/workload imbalance: <br>
+* **Some divergence/workload imbalance:** <br>
 Given the data dependency requirements of the algorithm for correctness, the first and last threads essentially have to perform slightly more amount of work in each iteration. Thus, we see some workload imbalance despite high level of data parallelism in most section of the compute function.
 
-* Locality: <br>
+* **Locality:** <br>
 In one of our earlier implementations, the pattern of accesses of the rabinpoly_t state by multiple threads was randomly strayed in memory, which led to poor locality. We overcame this by re-structuring some portion of the code and improving locality of accesses. <br> <br>
 
 ### CPU parallel version: 
@@ -171,11 +171,13 @@ A naive version of GPU parallelization algorithm, similar to the CPU parallel al
 * Kernel launch which actually performs the computation on GPU cores <br>
 * Copy Out phase to copy results from GPU to CPU <br>
 * MD5 hash computation of the chunks on CPU <br><br>
+
 Figure 3.6 shows the breakdown of the execution times of these phases. It is observed that the copy in phase takes the majority of the time and this is prevents the GPU parallel version to achieve a good speedup despite a high number of computing resources.<br>
 
-Moreover, the GPU implementation speedup is not linear since it is memory bandwidth bound for large thread counts since all these threads simultaneously issue multiple loads and stores to different addresses. The memory accesses should be more streamlined to reduce this bottleneck. <br>
+Moreover, the GPU implementation speedup is not linear since it is **memory bandwidth bound** for large thread counts since all these threads simultaneously issue multiple loads and stores to different addresses. The memory accesses should be more streamlined to reduce this bottleneck. <br>
 
-Some possible GPU specific optimizations: <br>
+**Some possible GPU specific optimizations:** <br>
+* GPU memory accesses can be more streamlined by having separate threads that perform loads into shared memory, threads that execute the kernel and those which update device memory state from the shared memory state. We can pipeline the execution kernel with the load/store threads. This will help alleviate the bandwidth limitations by producing controlled memory traffic, but still maintaining a decently high degree of data parallelism among the CUDA threads.
 * Hiding CPU-GPU data transfer overheads by overlapping copying and execution times using different GPU Streams (cudaMemcpyAsync can be used). We need to use pinned memory on host (via cudaMallocHost) since cudaMemcpyAsync only works with pinned host memory (so that OS does not swap out the memory while it is being asynchronously copied to device memory).
 * Hiding GPU memory allocation overheads by reusing device global memory across rabin library calls has already been implemented and is useful to cut down unrequired allocation times per call.
 * Efficient use of GPU shared memory for lookup buffers, rabinpoly window buffer, fingerprint and other state can help save some expensive device memory accesses and localize the shared state among threads with lower latency shared memory reads.
