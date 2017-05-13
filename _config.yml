@@ -1,3 +1,5 @@
 theme: jekyll-theme-cayman
 title: paraFS - CloudFS with parallel dedup
 final-report_page: final-report
+checkpoint_page: checkpoint
+proposal_page: proposal
