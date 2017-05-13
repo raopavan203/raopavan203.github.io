@@ -123,19 +123,20 @@ Figure 3.1 shows the execution times of only the compute portion of the Rabin fi
 **Figure 3.2: Compute time vs Write Size** <br>
 Since 16 threads gave the best performance, we fixed the number of threads = 16 for further observations. Figure 3.2 shows the execution times of only the compute portion of the Rabin fingerprint algorithm by varying the size of individual writes from 4KB to 64 KB. It is observed that as the write size increases, the serial version starts performing poorly whereas the parallel version is very fast. Thus, the speedup goes on increasing as the write size increases. <br>
 ![alt text](images/graph3.png) <br>
-**Figure 3.3: ** <br>
-TBD
+**Figure 3.3:** <br>
+TBD<br>
 ![alt text](images/graph4.png) <br>
-TBD
-**Figure 3.4: ** <br>
+**Figure 3.4:** <br>
+TBD<br>
 
 ## 4.4 Analysis: limitations in speedup and breakdown of execution time
-TBD
+TBD <br>
 ![alt text](images/GPUexectime.png) <br>
-**Figure 3.5: ** <br>
+**Figure 3.5:** <br>
 
 ## 4.5 Choice of machine: CPU/GPU
-TBD
+TBD <br>
+
 ## 5. References
 
 1. Samer Al-Kiswany, Abdullah Gharaibeh, Matei Ripeanu, GPUs as Storage System Accelerators, IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS, VOL. 24, NO. 8, AUGUST 2013.
