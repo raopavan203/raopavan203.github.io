@@ -57,3 +57,40 @@ As seen in Figure B, on observing the execution times of various sections in the
 ## 2.4. Dependencies in the program that would affect parallelism
 The computation of the fingerprints in the algorithm is optimized by using the fingerprint of the previous window to calculate the fingerprint of the current window. Hence, it could be challenging to make it data parallel. Since different threads would work on different sections of data, it could be challenging to compute fingerprint especially for windows that cover data from 2 threads.
 
+## 3. Approach
+
+## 3.1. Parallel Rabin fingerprinting algorithm
+![alt text](images/parallelrabin.jpg) <br>
+**Figure C : Idea of parallelism in Rabin fingerprinting algorithm** <br>
+
+We employ parallel threads to work on different chunks of the input data stream read by a single iteration of the dedup module in CloudFS. Each thread performs Rabin fingerprinting on its chunk using local rabinpoly_t state. As mentioned above, there is dependency across thread boundaries for an optimized computation in the sliding window fingerprinting. However, to parallelize the algorithm, we can give up on this optimization across thread boundaries by having each thread compute the rabin fingerprint for up to (WINDOW_SIZE-1) bytes in the subsequent thread’s chunk space. The small amount of redundant WINDOW_SIZE computation is not an overhead due to potential speedup possible in the large data stream processing. The “Overlap” in the figure shows one such region where the synchronization requirement can be overcome by this extra computation. However, since the last thread does not have future input data available to it, it cannot do the same, and hence must synchronize with the first thread that will process the subsequent data in the next iteration from the dedup module. This can be done using #omp pragma barrier in the naive approach, but this synchronization can be optimized further.
+
+## 3.2. Environment
+**Technologies** <br>
+* CPU-parallelism: OpenMP <br>
+* GPU-parallelism: CUDA <br>
+* Test framework: Python <br>
+* CloudFS: C, C++, Python, libs3, tornado server <br>
+
+**Target hardware** <br>
+* 8-core (hyperthreaded) 3.20 GHz Intel Xeon i7 processors <br>
+* NVIDIA GeForce GTX 1080 GPUs <br>
+
+**Machines used** <br>
+GHC41.GHC.ANDREW.CMU.EDU and GHC45.GHC.ANDREW.CMU.EDU <br>
+
+## 3.3. Mapping the problem to target parallel machines
+* **CPU parallelism:** <br>
+	We used 16 OpenMP threads to populate the 16 execution contexts of the 8-core 2-way multithreaded CPU on GHC. Each thread worked on a 1 KB section of the input buffer (in total, a 16 KB buffer is read from the file iteratively by the dedup module and each thread is supplied a 1 KB chunk of the data). <br>
+* **GPU parallelism:** <br>
+	We used 2048*20 CUDA threads to populate the 2048 execution contexts of the 20-core GTX 1080 GPU on GHC. Each thread worked on a 1 KB section of the input buffer (in total, a 2048*20 KB buffer is read from the file iteratively and each thread is supplied a 1 KB chunk of the data). <br>
+
+## 3.4. Change in original serial algorithm to benefit from parallelism
+Original serial algorithm (rabin_segment_next() API of the rabin fingerprint library) invoked by the dedup module of CloudFS processes the input buffer and returns as soon as it detects a marker. It is an iterative function that maintains the computation state within the rabinpoly_t structure passed to it across invocations. In order to implement a parallel version of rabin fingerprinting to detect segment boundaries, we need to implement a one-time call that processes a huge batch of data and determines the marker positions in the data stream, by employing multiple threads to work on different sections of the data stream. Hence, we implemented a better parallelizable version of the serial algorithm (compute_rabin_segments_serial() and its later counterparts- compute_rabin_segments_cpu() for CPU-parallel version and compute_rabin_segments_gpu() for GPU-parallel version). These versions simply process the entire buffer and returns all marker positions detected in the entire sequence. This enables employing multi-core as well as data-parallelism in the function versions.
+
+## 3.5 Iterations of optimization
+TBD
+
+## 3.6 Starter codebase
+CloudFS project that we developed in our 18746 (Storage Systems) class, a single threaded hybrid FUSE-based file system. 
+(Project URL available on demand).
