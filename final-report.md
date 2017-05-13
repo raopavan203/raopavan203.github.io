@@ -35,15 +35,17 @@ struct rabinpoly {
 };
 ```
 #### Operations:
-Following key operations are supported by the dedup library:
-rabin_init() : initialises the rabinpoly struct and constructs lookup buffers
-compute_rabin_segments() : Performs the actual computation of finding the markers/chunk boundaries
-rabin_reset(): Use this to use the same rabinpoly struct for a different file
-rabin_free(): Called at the end to free all resources allocated by rabin_init()
+Following key operations are supported by the dedup library: <br>
+rabin_init() : initialises the rabinpoly struct and constructs lookup buffers <br>
+compute_rabin_segments() : Performs the actual computation of finding the markers/chunk boundaries <br>
+rabin_reset(): Use this to use the same rabinpoly struct for a different file <br>
+rabin_free(): Called at the end to free all resources allocated by rabin_init() <br>
 
 #### Input and Output to the algorithm:
-Input : Pointer to the input datastream whose chunk boundaries are to be found
-Output : List of marker positions indicating chunk boundaries in input data, and number of markers found
+* Input : <br>
+Pointer to the input datastream whose chunk boundaries are to be found <br>
+* Output : <br>
+List of marker positions indicating chunk boundaries in input data, and number of markers found <br>
 
 ## 2.3. Motivation for parallel dedup (Computationally expensive part)
 
