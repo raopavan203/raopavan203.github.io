@@ -94,3 +94,62 @@ TBD
 ## 3.6 Starter codebase
 CloudFS project that we developed in our 18746 (Storage Systems) class, a single threaded hybrid FUSE-based file system. 
 (Project URL available on demand).
+
+## 4. Results
+
+## 4.1. Measuring performance
+We have measured the following execution times for various code sections for the serial, CPU parallel and GPU parallel versions of the Rabin hash algorithm : <br>
+* Total time for deduplication to happen <br>
+* Time to read from data stream in the algorithm <br>
+* Time to do the actual computations of Rabin Fingerprinting algorithm <br>
+* Time to compute MD5 hash algorithm <br>
+
+We have also measured the speedup for the Rabin fingerprint algorithm compute time as well as the speedup of the entire deduplication module with respect to the serial implementation. <br>
+
+## 4.2. Experimental setup: (input sizes, generation of requests)
+We performed experiments by invoking the deduplication module in 2 ways : <br>
+* Directly invoking deduplication on a file created through a test <br>
+* Invoking the deduplication module by performing writes to CloudFS. Upon write requests, CloudFS invokes the deduplication module. <br>
+
+We performed various tests by varying the write sizes from 4KB to 512KB. We also experimented with different file sizes (which can be controlled based on the number of writes)  ranging from 1 MB to 1GB. <br>
+
+The writes requests consisted of uniform as well as random data which were invoked by various tests. The tests invoke the serial, CPU parallel and GPU parallel versions of the deduplication module and the above measurements are taken. <br>
+
+## 4.3. Graphs of speedup or execute time
+![alt text](images/graph1.png) <br>
+**Figure 3.1: Compute time vs Number of threads** <br>
+Figure 3.1 shows the execution times of only the compute portion of the Rabin fingerprint algorithm by varying the number of threads. We observe a linear drop in the execution time for the CPU Parallel version, when changing the number of threads from 1 to 16.  <br>
+![alt text](images/graph2.png) <br>
+**Figure 3.2: Compute time vs Write Size** <br>
+Since 16 threads gave the best performance, we fixed the number of threads = 16 for further observations. Figure 3.2 shows the execution times of only the compute portion of the Rabin fingerprint algorithm by varying the size of individual writes from 4KB to 64 KB. It is observed that as the write size increases, the serial version starts performing poorly whereas the parallel version is very fast. Thus, the speedup goes on increasing as the write size increases. <br>
+![alt text](images/graph3.png) <br>
+**Figure 3.3: ** <br>
+TBD
+![alt text](images/graph4.png) <br>
+TBD
+**Figure 3.4: ** <br>
+
+## 4.4 Analysis: limitations in speedup and breakdown of execution time
+TBD
+![alt text](images/GPUexectime.png) <br>
+**Figure 3.5: ** <br>
+
+## 4.5 Choice of machine: CPU/GPU
+TBD
+## 5. References
+
+1. Samer Al-Kiswany, Abdullah Gharaibeh, Matei Ripeanu, GPUs as Storage System Accelerators, IEEE TRANSACTIONS ON PARALLEL AND DISTRIBUTED SYSTEMS, VOL. 24, NO. 8, AUGUST 2013.
+2. Udi Manber, Finding Similar Files in a Large File System, USENIX Winter 1994 Technical Conference Proceedings, Jan. 17-21, 1994, San Francisco, CA.
+3. Pramod Bhatotia, Rodrigo Rodrigues, Akshat Verma, Shredder: GPU-Accelerated Incremental Storage and Computation
+4. Rabin fingerprinting library: https://github.com/joeltucci/rabin-fingerprint-c
+5. Rabin fingerprinting original documentation by Michael O Rabin: http://www.xmailserver.org/rabin.pdf
+6. Rabin fingerprinting original paper (Finding Similar Files in a Large File System):
+7. http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.12.3222&rep=rep1&type=pdf
+8. LBFS usecase for Rabin fingerprinting: https://github.com/fd0/lbfs/tree/master/liblbfs
+9. Rabin GPU for network packet dedup: https://github.com/aimlab/rabinGPU
+10. OpenMP: https://computing.llnl.gov/tutorials/openMP/
+11. CUDA: https://docs.nvidia.com/cuda/cuda-c-programming-guide/#compute-capabilities
+
+## 6. List of work done by each student
+
+#### Equal work was performed by both project members.
