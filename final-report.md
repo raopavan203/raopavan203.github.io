@@ -12,6 +12,7 @@ In file systems, a common way to avoid redundant computations and storage is to 
 
 ## 2.2. Rabin fingerprinting
 It detects boundaries of these chunks in the input data based on the content. A chunk is the data between 2 such boundaries. This may lead to variable sized chunks. <br>
+![alt text][rabin.jpg] <br>
 As seen in Figure A, the algorithm computes fingerprints over a sliding window of data. The fingerprint calculation involves polynomial division of a polynomial of degree w-1 for a w bit sequence, with an irreducible polynomial of degree k. This is a very computationally intensive operation. <br>
 
 #### Data structures:
@@ -35,21 +36,20 @@ struct rabinpoly {
 ```
 #### Operations:
 Following key operations are supported by the dedup library:
-```javascript
 rabin_init() : initialises the rabinpoly struct and constructs lookup buffers
 compute_rabin_segments() : Performs the actual computation of finding the markers/chunk boundaries
 rabin_reset(): Use this to use the same rabinpoly struct for a different file
 rabin_free(): Called at the end to free all resources allocated by rabin_init()
-```
 
 #### Input and Output to the algorithm:
-```javascript
 Input : Pointer to the input datastream whose chunk boundaries are to be found
 Output : List of marker positions indicating chunk boundaries in input data, and number of markers found
-```
 
 ## 2.3. Motivation for parallel dedup (Computationally expensive part)
+
+![alt text][deduptime.png] <br>
 As seen in Figure B, on observing the execution times of various sections in the deduplication module, it was observed that majority of the time was spent in the Rabin Fingerprint function, whereas read and MD5 computation time was much lesser. Thus, The computation time in this case is greater than the I/O or bandwidth latency of the filesystem and it is thus, compute-bound. Hence, content based chunking algorithm will definitely benefit from parallelism as it will directly improve the file system throughput. Our goal was to improve reduce the execution time of the computation by parallelising it.
 
 ## 2.4. Dependencies in the program that would affect parallelism
 The computation of the fingerprints in the algorithm is optimized by using the fingerprint of the previous window to calculate the fingerprint of the current window. Hence, it could be challenging to make it data parallel. Since different threads would work on different sections of data, it could be challenging to compute fingerprint especially for windows that cover data from 2 threads.
+
